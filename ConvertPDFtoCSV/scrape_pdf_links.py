@@ -1,35 +1,41 @@
-import requests
-from bs4 import BeautifulSoup
 
-def scrape_pdf_links(url):
-    try:
-        # Send a GET request to the webpage
-        response = requests.get(url)
-        response.raise_for_status()
 
-        # Parse the HTML content
-        soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Find all anchor tags with href attribute containing ".pdf"
-        pdf_links = soup.find_all('a', href=lambda href: href and href.endswith('.pdf'))
+from selenium import webdriver
 
-        # Extract the href attribute value from each anchor tag
-        pdf_urls = [link['href'] for link in pdf_links]
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
-        return pdf_urls
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+options = webdriver.ChromeOptions() 
+prefs = {"download.default_directory" : "D:\Webscraping\ConvertPDFtoCSV"}
+options.add_experimental_option("prefs",prefs)
+options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
-# URL of the webpage to scrape
+driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()),options=options)
+
+# Open the target webpage
 webpage_url = "https://www.sbp.org.pk/ecodata/kibor_index.asp"
+driver.get(webpage_url)
 
-# Scrape PDF links
-pdf_links = scrape_pdf_links(webpage_url)
+# Find the elements using XPath
+pdf_links = []
+for i in range(1, 8):  # Loop over the desired range of elements
+    xpath_expr = '//*[@id="tablediv"]/table/tbody/tr[{}]/td[2]/a'.format(i)
+    pdf_link = driver.find_element(By.XPATH, xpath_expr)
+    pdf_links.append(pdf_link)
+    print(pdf_links)
 
-if pdf_links is not None:
-    for pdf_url in pdf_links:
-        print(pdf_url)
-else:
-    print("Failed to scrape PDF links.")
+
+# Extract the URLs from the elements
+pdf_urls = [link.get_attribute("href") for link in pdf_links]
+
+# Print the extracted PDF URLs
+for url in pdf_urls:
+    print(url)
+
+# Close the web browser
+driver.quit()
