@@ -1,14 +1,10 @@
-
-
-
 from selenium import webdriver
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+from convertpdftotable import convert_pdf_to_table
 
 options = webdriver.ChromeOptions() 
 prefs = {"download.default_directory" : "D:\Webscraping\ConvertPDFtoCSV"}
@@ -27,15 +23,19 @@ for i in range(1, 8):  # Loop over the desired range of elements
     xpath_expr = '//*[@id="tablediv"]/table/tbody/tr[{}]/td[2]/a'.format(i)
     pdf_link = driver.find_element(By.XPATH, xpath_expr)
     pdf_links.append(pdf_link)
-    print(pdf_links)
+    # print(pdf_links)
 
 
 # Extract the URLs from the elements
 pdf_urls = [link.get_attribute("href") for link in pdf_links]
 
+convert_pdf_to_table(pdf_urls)
+
 # Print the extracted PDF URLs
-for url in pdf_urls:
-    print(url)
+# for url in pdf_urls:
+#     print(url)
+#     convert_pdf_to_table(url)
+#     print("Converted to table")
 
 # Close the web browser
 driver.quit()
